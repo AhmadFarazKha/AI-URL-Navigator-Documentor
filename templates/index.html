@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI URL Navigator - Intelligent Navigation Tracking</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.95;
+        }
+
+        .controls {
+            padding: 30px;
+            background: #f8f9fa;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #dee2e6;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #56ab2f 0%, #a8e063 100%);
+            color: white;
+        }
+
+        .btn-info {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            color: white;
+        }
+
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            display: none;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .status-success {
+            background: #d4edda;
+            color: #155724;
+            border: 2px solid #c3e6cb;
+        }
+
+        .status-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 2px solid #f5c6cb;
+        }
+
+        .status-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 2px solid #bee5eb;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            border-top-color: currentColor;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .stats {
+            padding: 30px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            text-align: center;
+        }
+
+        .stat-card h3 {
+            font-size: 3em;
+            margin-bottom: 10px;
+        }
+
+        .stat-card p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .data-section {
+            padding: 30px;
+        }
+
+        .section-title {
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            color: #495057;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .data-table th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .data-table td {
+            padding: 15px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .data-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .url-cell a {
+            color: #667eea;
+            text-decoration: none;
+            word-break: break-all;
+        }
+
+        .url-cell a:hover {
+            text-decoration: underline;
+        }
+
+        .description-cell {
+            max-width: 300px;
+            color: #6c757d;
+        }
+
+        .copy-btn {
+            background: #667eea;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .copy-btn:hover {
+            background: #5568d3;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #adb5bd;
+        }
+
+        .empty-state svg {
+            width: 120px;
+            height: 120px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .empty-state h3 {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .button-group {
+                flex-direction: column;
+            }
+
+            button {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .header h1 {
+                font-size: 1.8em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 Intelligent Navigation Tracking with AI Analysis</h1>
+            <p>Track your web navigation with AI-powered element analysis</p>
+        </div>
+
+        <div class="controls">
+            <div class="input-group">
+                <label for="urlInput">Starting URL</label>
+                <input 
+                    type="text" 
+                    id="urlInput" 
+                    placeholder="https://www.training.alhazentech.com/algz/algaurizin/admin/login"
+                    value="https://www.training.alhazentech.com/algz/algaurizin/admin/login"
+                >
+            </div>
+
+            <div class="button-group">
+                <button class="btn-primary" id="startBtn" onclick="startNavigation()">
+                    🚀 START NAVIGATION
+                </button>
+                <button class="btn-success" id="captureBtn" onclick="captureClicks()" disabled>
+                    📸 CAPTURE CLICKS
+                </button>
+                <button class="btn-info" id="refreshBtn" onclick="refreshData()" disabled>
+                    🔄 REFRESH DATA
+                </button>
+                <button class="btn-warning" id="downloadBtn" onclick="downloadWord()">
+                    📄 DOWNLOAD WORD
+                </button>
+                <button class="btn-danger" id="stopBtn" onclick="stopNavigation()" disabled>
+                    ⛔ STOP & CLEAR
+                </button>
+            </div>
+
+            <div id="statusMessage" class="status"></div>
+        </div>
+
+        <div class="stats">
+            <div class="stat-card">
+                <h3 id="totalEntries">0</h3>
+                <p>Total Entries</p>
+            </div>
+            <div class="stat-card">
+                <h3 id="uniqueUrls">0</h3>
+                <p>Unique URLs</p>
+            </div>
+        </div>
+
+        <div class="data-section">
+            <h2 class="section-title">
+                📊 Navigation History
+            </h2>
+            <div id="dataDisplay">
+                <div class="empty-state">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                        <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                        <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                    </svg>
+                    <h3>No Navigation Data Yet</h3>
+                    <p>Start navigation and click on elements to begin tracking</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let isNavigating = false;
+        let captureInterval = null;
+
+        function showStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('statusMessage');
+            statusDiv.className = `status status-${type}`;
+            statusDiv.innerHTML = message;
+            statusDiv.style.display = 'block';
+            
+            if (type === 'success') {
+                setTimeout(() => {
+                    statusDiv.style.display = 'none';
+                }, 5000);
+            }
+        }
+
+        function updateButtonStates(navigating) {
+            document.getElementById('startBtn').disabled = navigating;
+            document.getElementById('captureBtn').disabled = !navigating;
+            document.getElementById('refreshBtn').disabled = !navigating;
+            document.getElementById('downloadBtn').disabled = false;
+            document.getElementById('stopBtn').disabled = !navigating;
+        }
+
+        async function startNavigation() {
+            const url = document.getElementById('urlInput').value.trim();
+            
+            if (!url) {
+                showStatus('⚠️ Please enter a valid URL', 'error');
+                return;
+            }
+
+            if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                showStatus('⚠️ URL must start with http:// or https://', 'error');
+                return;
+            }
+
+            showStatus('🚀 Starting navigation... <span class="loading"></span>', 'info');
+            document.getElementById('startBtn').disabled = true;
+
+            try {
+                const response = await fetch('/start_navigation', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({url: url})
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    isNavigating = true;
+                    updateButtonStates(true);
+                    showStatus('✅ Navigation started! A new browser window has opened. Click on elements to track them. Auto-capture is running every 5 seconds.', 'success');
+                    
+                    // Auto-capture every 5 seconds
+                    captureInterval = setInterval(captureClicks, 5000);
+                    
+                    // Initial capture
+                    setTimeout(captureClicks, 2000);
+                } else {
+                    showStatus('❌ Error: ' + data.error, 'error');
+                    document.getElementById('startBtn').disabled = false;
+                }
+            } catch (error) {
+                showStatus('❌ Error: ' + error.message, 'error');
+                document.getElementById('startBtn').disabled = false;
+            }
+        }
+
+        async function captureClicks() {
+            if (!isNavigating) return;
+
+            try {
+                const response = await fetch('/capture_clicks');
+                const data = await response.json();
+                
+                if (data.success) {
+                    if (data.new_entries > 0) {
+                        showStatus(`✅ Captured ${data.new_entries} new clicks! Total: ${data.total_entries}`, 'success');
+                        refreshData();
+                    }
+                } else {
+                    console.error('Error capturing clicks:', data.error);
+                }
+            } catch (error) {
+                console.error('Error capturing clicks:', error);
+            }
+        }
+
+        async function refreshData() {
+            try {
+                const response = await fetch('/get_navigation_data');
+                const data = await response.json();
+                
+                if (data.success) {
+                    displayData(data.data);
+                    updateStats(data.data);
+                }
+            } catch (error) {
+                console.error('Error refreshing data:', error);
+                showStatus('❌ Error refreshing data: ' + error.message, 'error');
+            }
+        }
+
+        function displayData(navigationData) {
+            const display = document.getElementById('dataDisplay');
+            
+            if (!navigationData || navigationData.length === 0) {
+                display.innerHTML = `
+                    <div class="empty-state">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                            <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                            <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                        </svg>
+                        <h3>No Navigation Data Yet</h3>
+                        <p>Start navigation and click on elements to begin tracking</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let tableHTML = `
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Timestamp</th>
+                            <th>Element Name</th>
+                            <th>URL</th>
+                            <th>AI Description</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            navigationData.forEach((item, index) => {
+                const escapedUrl = item.url.replace(/'/g, "\\'");
+                tableHTML += `
+                    <tr>
+                        <td><strong>${index + 1}</strong></td>
+                        <td>${item.timestamp}</td>
+                        <td><strong>${escapeHtml(item.element_name)}</strong></td>
+                        <td class="url-cell">
+                            <a href="${escapeHtml(item.url)}" target="_blank" rel="noopener noreferrer">
+                                ${escapeHtml(item.url)}
+                            </a>
+                        </td>
+                        <td class="description-cell">${escapeHtml(item.description)}</td>
+                        <td>
+                            <button class="copy-btn" onclick="copyToClipboard('${escapedUrl}')">
+                                📋 Copy
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            tableHTML += `
+                    </tbody>
+                </table>
+            `;
+
+            display.innerHTML = tableHTML;
+        }
+
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, m => map[m]);
+        }
+
+        function updateStats(navigationData) {
+            document.getElementById('totalEntries').textContent = navigationData.length;
+            
+            const uniqueUrls = new Set(navigationData.map(item => item.url));
+            document.getElementById('uniqueUrls').textContent = uniqueUrls.size;
+        }
+
+        async function downloadWord() {
+            showStatus('📄 Generating Word document... <span class="loading"></span>', 'info');
+            
+            try {
+                const response = await fetch('/download_word');
+                
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `navigation_history_${new Date().getTime()}.docx`;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                    
+                    showStatus('✅ Word document downloaded successfully!', 'success');
+                } else {
+                    const data = await response.json();
+                    showStatus('❌ Error: ' + (data.error || 'Failed to generate document'), 'error');
+                }
+            } catch (error) {
+                showStatus('❌ Error downloading document: ' + error.message, 'error');
+            }
+        }
+
+        async function stopNavigation() {
+            if (!confirm('Are you sure you want to stop navigation and clear all data?')) {
+                return;
+            }
+
+            showStatus('🛑 Stopping navigation... <span class="loading"></span>', 'info');
+
+            try {
+                if (captureInterval) {
+                    clearInterval(captureInterval);
+                    captureInterval = null;
+                }
+
+                await fetch('/stop_navigation', {method: 'POST'});
+                await fetch('/clear_data', {method: 'POST'});
+                
+                isNavigating = false;
+                updateButtonStates(false);
+                
+                document.getElementById('dataDisplay').innerHTML = `
+                    <div class="empty-state">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                            <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                            <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                        </svg>
+                        <h3>No Navigation Data Yet</h3>
+                        <p>Start navigation and click on elements to begin tracking</p>
+                    </div>
+                `;
+                
+                document.getElementById('totalEntries').textContent = '0';
+                document.getElementById('uniqueUrls').textContent = '0';
+                
+                showStatus('✅ Navigation stopped and data cleared successfully', 'success');
+            } catch (error) {
+                showStatus('❌ Error stopping navigation: ' + error.message, 'error');
+            }
+        }
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                showStatus('✅ URL copied to clipboard!', 'success');
+            }).catch(err => {
+                showStatus('❌ Failed to copy URL', 'error');
+            });
+        }
+
+        // Load initial data on page load
+        window.onload = function() {
+            console.log('AI URL Navigator loaded successfully');
+            refreshData();
+        };
+
+        // Handle page unload
+        window.addEventListener('beforeunload', function(e) {
+            if (isNavigating) {
+                e.preventDefault();
+                e.returnValue = '';
+                return 'Navigation is still active. Are you sure you want to leave?';
+            }
+        });
+    </script>
+</body>
+</html>
